@@ -34,6 +34,7 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(MultithreadEventLoopGroup.class);
 
+    //EevntLoopThrea 默认数值，默认为为CPU * 2
     private static final int DEFAULT_EVENT_LOOP_THREADS;
 
     static {
@@ -64,10 +65,15 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
      * EventExecutorChooserFactory, Object...)
      */
     protected MultithreadEventLoopGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory,
-                                     Object... args) {
+                                        Object... args) {
         super(nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads, executor, chooserFactory, args);
     }
 
+    /**
+     * 线程工程，区别是优先级最高
+     *
+     * @return
+     */
     @Override
     protected ThreadFactory newDefaultThreadFactory() {
         return new DefaultThreadFactory(getClass(), Thread.MAX_PRIORITY);
