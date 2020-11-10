@@ -30,14 +30,21 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
 
-    //？？ EventLoop
+    //？？ EventLoop  用于执行任务
     private final EventExecutor[] children;
+    /**
+     * children的set化
+     */
     private final Set<EventExecutor> readonlyChildren;
+    /**
+     *
+     */
     private final AtomicInteger terminatedChildren = new AtomicInteger();
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
 
     /**
      * Event 选择器
+     * 选择方式为轮询，一种是累加 一种是2的倍数，2的倍数是采用与运算，效率更快一些
      */
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
@@ -118,6 +125,9 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
         chooser = chooserFactory.newChooser(children);
 
+        /**
+         * 任务执行完关闭后计数
+         */
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {
             @Override
             public void operationComplete(Future<Object> future) throws Exception {

@@ -56,13 +56,19 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     @SuppressWarnings("unchecked")
     static final Map.Entry<AttributeKey<?>, Object>[] EMPTY_ATTRIBUTE_ARRAY = new Map.Entry[0];
 
+    /**
+     * 如果是主从模式则是Boss
+     * 单线程和多线程模式的Group
+     */
     volatile EventLoopGroup group;
+
     /**
      * channel初始化工厂，通过反射初始化调用方设置的channel类型
      * 当前工厂类（ReflectiveChannelFactory）拿到调用方设置的clannel的class的构造方法
      */
     @SuppressWarnings("deprecation")
     private volatile ChannelFactory<? extends C> channelFactory;
+
     private volatile SocketAddress localAddress;
 
     // The order in which ChannelOptions are applied is important they may depend on each other for validation
@@ -177,6 +183,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      */
     public <T> B option(ChannelOption<T> option, T value) {
         ObjectUtil.checkNotNull(option, "option");
+        /**
+         * 通过synchronized保证并发设置问题
+         */
         synchronized (options) {
             if (value == null) {
                 options.remove(option);
@@ -273,6 +282,14 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         return doBind(ObjectUtil.checkNotNull(localAddress, "localAddress"));
     }
 
+    /**
+     * 只有服务端才可以做doBind：
+     * 1、initAndRegister： Create a new {@link Channel} and register it with an {@link EventLoop}.
+     * 2、doBind0：
+     *
+     * @param localAddress
+     * @return
+     */
     private ChannelFuture doBind(final SocketAddress localAddress) {
         //创建、初始、注册（ServerSocketChannel 注册到NioEventLoop的Select）
         final ChannelFuture regFuture = initAndRegister();
@@ -310,10 +327,23 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
     }
 
+    /**
+     * Create a new {@link Channel} and register it with an {@link EventLoop}.
+     *
+     * @return
+     */
     final ChannelFuture initAndRegister() {
+
+        //创建Channel，ServerSocketChannel
         Channel channel = null;
         try {
+            /**
+             * 默认调用channel的构造方法创建
+             */
             channel = channelFactory.newChannel();
+            /**
+             * 初始化channel
+             */
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
@@ -328,6 +358,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
         //开始注册，serverSocketChannel注册到bossWorkGroup
         ChannelFuture regFuture = config().group().register(channel);
+        /**
+         * 如果注册时发生异常关闭channel
+         */
         if (regFuture.cause() != null) {
             if (channel.isRegistered()) {
                 channel.close();

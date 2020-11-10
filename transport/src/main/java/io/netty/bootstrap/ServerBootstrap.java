@@ -47,9 +47,14 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
     // The order in which child ChannelOptions are applied is important they may depend on each other for validation
     // purposes.
+    /**
+     * 为什么不用ConcurrentHashMap保证线程安全，而是采用synchronized关键词
+     */
     private final Map<ChannelOption<?>, Object> childOptions = new LinkedHashMap<ChannelOption<?>, Object>();
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<AttributeKey<?>, Object>();
+
     private final ServerBootstrapConfig config = new ServerBootstrapConfig(this);
+
     private volatile EventLoopGroup childGroup;
 
     /**
@@ -131,6 +136,13 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         return this;
     }
 
+    /**
+     * 初始化channel：
+     * 1、初始化boss的channel选项设置
+     * 2、初始化boss的channel属性设置
+     * 3、初始化work的channel选项设置
+     * 4、初始化work的channel属性设置
+     */
     @Override
     void init(Channel channel) {
         setChannelOptions(channel, newOptionsArray(), logger);
@@ -146,6 +158,9 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         }
         final Entry<AttributeKey<?>, Object>[] currentChildAttrs = childAttrs.entrySet().toArray(EMPTY_ATTRIBUTE_ARRAY);
 
+        /**
+         * 这块逻辑需要重新梳理
+         */
         p.addLast(new ChannelInitializer<Channel>() {
             @Override
             public void initChannel(final Channel ch) {
@@ -155,6 +170,9 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                     pipeline.addLast(handler);
                 }
 
+                /**
+                 * ?
+                 */
                 ch.eventLoop().execute(new Runnable() {
                     @Override
                     public void run() {

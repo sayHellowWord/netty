@@ -28,7 +28,8 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
 
     public static final DefaultEventExecutorChooserFactory INSTANCE = new DefaultEventExecutorChooserFactory();
 
-    private DefaultEventExecutorChooserFactory() { }
+    private DefaultEventExecutorChooserFactory() {
+    }
 
     @Override
     public EventExecutorChooser newChooser(EventExecutor[] executors) {
@@ -62,6 +63,9 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
         // The 64-bit long solves this by placing the overflow so far into the future, that no system
         // will encounter this in practice.
         private final AtomicLong idx = new AtomicLong();
+        /**
+         * 两个chooser的executors是group初始化时赋值
+         */
         private final EventExecutor[] executors;
 
         GenericEventExecutorChooser(EventExecutor[] executors) {
