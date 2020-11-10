@@ -8,6 +8,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import java.util.List;
 
 /**
+ * 将ByteBuff转换为自己的对象-二次解码
  * Created by wubo15 on 2020/11/6.
  *
  * @author wubo15

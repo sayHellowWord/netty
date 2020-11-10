@@ -46,7 +46,9 @@ public class OrderServer {
 
             // Start the server.
             ChannelFuture f = b.bind(8080).sync();
+
             // Wait until the server socket is closed.
+            //让线程进入 wait 状态 ？？
             f.channel().closeFuture().sync();
         } finally {
             // Shut down all event loops to terminate all threads.

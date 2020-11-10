@@ -4,6 +4,8 @@ package com.nick.order.codec;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 /**
+ * 讲数据流读取到ByteBuff中-一次解码
+ * <p>
  * Created by wubo15 on 2020/11/6.
  *
  * @author wubo15
